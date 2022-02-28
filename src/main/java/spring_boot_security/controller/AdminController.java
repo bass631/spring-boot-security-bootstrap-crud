@@ -2,6 +2,7 @@ package spring_boot_security.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -13,7 +14,7 @@ import spring_boot_security.model.User;
 import spring_boot_security.service.RoleService;
 import spring_boot_security.service.UserService;
 
-import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Controller
@@ -30,36 +31,32 @@ public class AdminController {
     }
 
     @RequestMapping(value = "/admin/", method = RequestMethod.GET)
-    public String index(Model model) {
+    public String index(@AuthenticationPrincipal User user, Model model) {
+        model.addAttribute("user", user);
+        model.addAttribute("roles", roleService.getAllRoles());
         model.addAttribute("users", userService.getAllUsers());
         return "index";
     }
 
-    @RequestMapping(value = "/admin/new", method = RequestMethod.GET)
-    public String addNewUser(Model model) {
-        model.addAttribute("user", new User());
-        return "new";
-    }
-
-    @RequestMapping(value = "/admin/saveUser", method = RequestMethod.POST)
+    @RequestMapping(value = "/admin/save", method = RequestMethod.POST)
     public String saveUser(@ModelAttribute("user") User user,
-                           @RequestParam(required = false) String roleAdmin) {
-        Set<Role> roles = new HashSet<>();
-        roles.add(roleService.getRoleByName("USER"));
-        if (roleAdmin != null) {
-            roles.add(roleService.getRoleByName("ADMIN"));}
+                           @RequestParam("rolesId") List<Integer> rolesId) {
+        Set<Role> roles = roleService.getRoleById(rolesId);
         userService.saveUser(user, roles);
         return "redirect:/admin/";
     }
 
     @RequestMapping(value = "/admin/update", method = RequestMethod.POST)
-    public String updateUser(@RequestParam("userId") int id, Model model) {
-        model.addAttribute("user", userService.getUser(id));
-        return "new";
+    public String updateUser(@ModelAttribute("user") User user,
+                             @RequestParam("updId") int id,
+                             @RequestParam("rolesId") List<Integer> rolesId) {
+        Set<Role> roles = roleService.getRoleById(rolesId);
+        userService.updateUser(user, id, roles);
+        return "redirect:/admin/";
     }
 
     @RequestMapping(value = "/admin/delete", method = RequestMethod.POST)
-    public String deleteUser(@RequestParam("userId") int id) {
+    public String deleteUser(@RequestParam("delId") int id) {
         userService.deleteUser(id);
         return "redirect:/admin/";
     }

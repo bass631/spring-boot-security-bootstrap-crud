@@ -32,8 +32,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public User getUser(int id) {
-        return userDao.getUser(id);
+    public void updateUser(User user, int id, Set<Role> roles) {
+        userDao.updateUser(user, id, roles);
     }
 
     @Override
@@ -41,7 +41,6 @@ public class UserServiceImpl implements UserService {
     public void deleteUser(int id) {
         userDao.deleteUser(id);
     }
-
 
     @Override
     public UserDetails loadUserByUsername(String username) {

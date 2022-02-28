@@ -12,7 +12,7 @@ public interface UserDao {
 
     void saveUser(User user, Set<Role> roles);
 
-    User getUser(int id);
+    void updateUser(User user, int id, Set<Role> roles);
 
     void deleteUser(int id);
 

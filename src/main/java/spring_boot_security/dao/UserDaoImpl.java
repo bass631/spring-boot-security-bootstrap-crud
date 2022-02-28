@@ -19,8 +19,8 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public List<User> getAllUsers() {
-        TypedQuery<User> users = entityManager.createQuery("FROM User", User.class);
-//        TypedQuery<User> users = entityManager.createQuery("SELECT u from User u", User.class);
+//        TypedQuery<User> users = entityManager.createQuery("FROM User", User.class);
+        TypedQuery<User> users = entityManager.createQuery("SELECT u FROM User u", User.class);
         return users.getResultList();
     }
 
@@ -32,9 +32,17 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public User getUser(int id) {
-        User user = entityManager.find(User.class, id);
-        return user;
+    public void updateUser(User user, int id, Set<Role> roles) {
+        User user1 = entityManager.find(User.class, id);
+
+        if (!user1.getPassword().equals(user.getPassword())) {
+            user.setPassword(new BCryptPasswordEncoder(12).encode(user.getPassword()));
+            System.out.println("Пароль изменен!");
+        }
+
+        user.setId(id);
+        user.setRoles(roles);
+        entityManager.merge(user);
     }
 
     @Override
@@ -44,9 +52,9 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public User findByUsername(String username) {
-        TypedQuery<User> query = entityManager.createQuery("SELECT  u FROM User u WHERE u.username =:username", User.class);
-        query.setParameter("username", username);
+    public User findByUsername(String email) {
+        TypedQuery<User> query = entityManager.createQuery("SELECT  u FROM User u WHERE u.email =:email", User.class);
+        query.setParameter("email", email);
         return query.getSingleResult();
     }
 }
